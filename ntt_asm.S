@@ -17,6 +17,7 @@
 
 .endm
 
+# Cooley-Tucky Butterfly
 .macro ct_butterfly_core A0, C0, C1, OFFSET0, OFFSET1, THI, TLO, Q, QINV, TMP0, TMP1, ZETA
     mulh    \THI, \C1, \ZETA        # t3: high / t4: low
     mul     \TLO, \C1, \ZETA        # zeta * a[j + len]
@@ -25,6 +26,7 @@
     add     \C0, \C0, \THI
 .endm
 
+# load coeffs into registers from array
 .macro load_coeffs A0, C0, C1, C2, C3, C4, C5, C6, C7, OFF0, OFF1, OFF2, OFF3, OFF4, OFF5, OFF6, OFF7
     lw      \C0, \OFF0(\A0)
     lw      \C1, \OFF1(\A0)
@@ -36,6 +38,7 @@
     lw      \C7, \OFF7(\A0)
 .endm
  
+# store coeffs into array from registers
 .macro end_butterfly A0, C0, C1, C2, C3, C4, C5, C6, C7, OFF0, OFF1, OFF2, OFF3, OFF4, OFF5, OFF6, OFF7
     sw      \C0, \OFF0(\A0)
     sw      \C1, \OFF1(\A0)
@@ -47,6 +50,8 @@
     sw      \C7, \OFF7(\A0)
 .endm
 
+# 3 layer merged CT Butterfly
+# used to merge 1~3, 4~6 layer
 .macro ct_butterfly_3layer A0, C0, C1, C2, C3, C4, C5, C6, C7, OFFSET0, OFFSET1, OFFSET2, OFFSET3, OFFSET4, OFFSET5, OFFSET6, OFFSET7, THI, TLO, Q, QINV, TMP0, TMP1, Z0, Z1, Z2, Z3, Z4, Z5, Z6
     load_coeffs \A0, \C0, \C1, \C2, \C3, \C4, \C5, \C6, \C7, \OFFSET0, \OFFSET1, \OFFSET2, \OFFSET3, \OFFSET4, \OFFSET5, \OFFSET6, \OFFSET7
     # layer 1
@@ -68,6 +73,7 @@
     end_butterfly \A0, \C0, \C1, \C2, \C3, \C4, \C5, \C6, \C7, \OFFSET0, \OFFSET1, \OFFSET2, \OFFSET3, \OFFSET4, \OFFSET5, \OFFSET6, \OFFSET7
 .endm
 
+# set zeta values
 .macro set_zetas Z0, Z1, Z2, Z3, Z4, Z5, Z6
     li  a1, \Z0
     li  a2, \Z1
@@ -78,6 +84,7 @@
     li  a7, \Z6
 .endm
 
+# last 7~8 layer
 .macro ntt_last_layer A0, C0, C1, C2, C3, OFFSET0, OFFSET1, OFFSET2, OFFSET3, THI, TLO, Q, QINV, TMP0, TMP1, ZREG0, ZREG1, ZREG2, Z0, Z1, Z2
     lw \C0, \OFFSET0(\A0)
     lw \C1, \OFFSET1(\A0)
@@ -99,6 +106,7 @@
     sw \C2, \OFFSET2(\A0)
     sw \C3, \OFFSET3(\A0)
 .endm
+
 
 # 3 layer merged NTT
 # [Register usage]
